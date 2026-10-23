@@ -2687,6 +2687,164 @@ function createDefaultForms(){
         ]
     };
 
+    /* ==========================================================
+       Laboratory forms imported from the "iy" Word file.
+       Forms that already exist above (CBC, BFFM, Widal enteric,
+       U.G, S.G, RBS, ASO, V.S) are intentionally NOT repeated.
+       The existing loader adds only the forms that are missing,
+       so nothing is duplicated and nothing existing is changed.
+       "price" is the "value" column from the Word list; it is
+       stored with the form but not shown anywhere in the UI.
+       ========================================================== */
+    (function addImportedLabForms(){
+
+        const fx  = label   => Object.assign(newCell("fixed"),{label:label});
+        const inp = ()      => newCell("input");
+        const ref = label   => Object.assign(newCell("reference"),{label:label || ""});
+        const sel = options => Object.assign(newCell("select"),{options:options});
+        const area = label  => Object.assign(newCell("multiline"),{label:label || ""});
+
+        const sec = (title, columns, rows) => ({
+            id:uid("SEC"),
+            title:title,
+            columns:columns,
+            rows:rows.map(cells => ({cells:cells}))
+        });
+
+        const add = (name, price, sections) => {
+            const code = name;
+            const id = code.toLowerCase().replace(/[^a-z0-9_-]/g,"_");
+            if(forms[id]){ return; }
+            forms[id] = {
+                id:id,
+                code:code,
+                name:name,
+                reportTitle:name,
+                price:price,
+                sections:sections
+            };
+        };
+
+        const POS_NEG = ["Negative (-ve)","Positive (+ve)"];
+
+        /* Qualitative tests: one result chosen from a list */
+        const qualitative = (name, price, label, options) =>
+            add(name, price, [
+                sec("", 2, [[fx(label), sel(options)]])
+            ]);
+
+        /* Single quantitative test: Test | Result | Reference */
+        const single = (name, price, label, reference) =>
+            add(name, price, [
+                sec("", 3, [[fx(label), inp(), ref(reference)]])
+            ]);
+
+        /* Multi-parameter test: Item | Result | Unit | Ref.range */
+        const table4 = (name, price, items) =>
+            add(name, price, [
+                sec("", 4, [
+                    [fx("Item"), fx("Result"), fx("Unit"), fx("Ref.range")]
+                ].concat(items.map(i => [fx(i[0]), inp(), fx(i[1]), ref(i[2])])))
+            ]);
+
+        /* ---------- Serology / infectious ---------- */
+        add("Widal for brucella", 10, [
+            sec("", 2, [
+                [fx("Brucella abortus:"),    inp()],
+                [fx("Brucella melitensis:"), inp()],
+                [fx("Comment:"),             area("")]
+            ])
+        ]);
+
+        qualitative("ICT malaria",  8,  "ICT malaria:",  POS_NEG);
+        qualitative("ICT typhoid",  8,  "ICT typhoid:",  POS_NEG);
+        qualitative("Dengue ICT",   22, "Dengue ICT:",   POS_NEG);
+        qualitative("H.pylori Ag",  10, "H.pylori Ag:",  POS_NEG);
+        qualitative("H.pylori Ab",  8,  "H.pylori Ab:",  POS_NEG);
+        qualitative("HCG serum",    8,  "HCG serum:",    POS_NEG);
+        qualitative("HCG urine",    7,  "HCG urine:",    POS_NEG);
+        qualitative("FOB",          15, "FOB:",          POS_NEG);
+
+        /* ---------- Blood sugar ---------- */
+        single("FBS",   7,  "FBS:",   "80-120 mg/dl");
+        single("2hpp",  8,  "2HPP:",  "80-140 mg/dl");
+        single("HbA1c", 20, "HbA1C:", "<6.6%");
+
+        /* ---------- Blood grouping ---------- */
+        add("Blood grouping(ABO)", 10, [
+            sec("", 2, [[
+                fx("Blood grouping:"),
+                sel([
+                    "Blood group is A Rh +ve (A+)",
+                    "Blood group is A Rh -ve (A-)",
+                    "Blood group is B Rh +ve (B+)",
+                    "Blood group is B Rh -ve (B-)",
+                    "Blood group is AB Rh +ve (AB+)",
+                    "Blood group is AB Rh -ve (AB-)",
+                    "Blood group is O Rh +ve (O+)",
+                    "Blood group is O Rh -ve (O-)"
+                ])
+            ]])
+        ]);
+
+        /* ---------- Inflammation / rheumatology ---------- */
+        single("RF",  12, "RF:",  "");
+        single("CRP", 10, "CRP:", "mg/dl");
+        single("ESR", 7,  "ESR:", "mm/½h");
+
+        /* ---------- Chemistry ---------- */
+        single("Uric acid", 10, "Uric acid:", "");
+        single("Ca+",       10, "Ca+:",       "8.8-10.2 mg/dl");
+        single("Vit D",     40, "Vit D:",     "30-100 ng/ml");
+        single("Vit B12",   50, "Vit B12:",   "197-771 pg/ml");
+        single("PSA",       30, "PSA:",       "");
+
+        /* ---------- Hormones ---------- */
+        table4("LH", 27, [[
+            "LH", "MIU/ml",
+            "Follicular phase(1.8-11.7) Ovulation period(7.5-89.0) Luteal phase(0.5-14.0)"
+        ]]);
+
+        table4("FSH", 27, [[
+            "FSH", "MIU/ml",
+            "Follicular phase(3.0-80) Ovulation period(2.5-16.5) Luteal phase(1.3-5.4)"
+        ]]);
+
+        table4("PRL", 27, [[
+            "PRL", "MIU/ml", "108-557 MIU/ml"
+        ]]);
+
+        /* ---------- Liver function ---------- */
+        table4("LFT", 45, [
+            ["T.Protein", "g/dl",  "6.6-8.7 g/dl"],
+            ["Albumin",   "g/dl",  "3.8-5.1 g/dl"],
+            ["T.Bil",     "mg/dl", "0.1-1.2 mg/dl"],
+            ["D.Bil",     "mg/dl", "0-0.9 mg/dl"],
+            ["ALP",       "u/l",   "Up to 306 u/l"],
+            ["AST",       "u/l",   "Up to 31 u/l"],
+            ["ALT",       "u/l",   "Up to 31 u/l"]
+        ]);
+
+        /* ---------- Thyroid function (price 25 x 3 = 75) ---------- */
+        table4("TFT", 75, [
+            ["TSH", "uIU/ml", "(0.2-5.0)uIU/ml"],
+            ["T3",  "nmol/l", "(1.3-3.1)nmol/l"],
+            ["T4",  "nmol/l", "(61.0-181)nmol/l"]
+        ]);
+
+        /* ---------- Renal function (price 10 x 2 = 20) ---------- */
+        table4("RFT", 20, [
+            ["urea",       "", ""],
+            ["creatinine", "", ""]
+        ]);
+
+        /* ---------- Lipids / cardiac ---------- */
+        single("Cholesterol",   8,  "Cholesterol:",   "<200 mg/dl");
+        single("Triglycerides", 8,  "Triglycerides:", "<200 mg/dl");
+        single("Troponin",      10, "Troponin:",      "");
+
+    })();
+
     return forms;
 }
 
