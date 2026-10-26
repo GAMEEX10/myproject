@@ -1389,6 +1389,9 @@ button{
                     <button type="button" class="settings-tab" data-settings-section="appearance" onclick="showSettingsSection('appearance')">المظهر وطريقة العرض</button>
                     <button type="button" class="settings-tab" data-settings-section="report-title-design" onclick="showSettingsSection('report-title-design')">Report Title design</button>
                     <button type="button" class="settings-tab" data-settings-section="table-format" onclick="showSettingsSection('table-format')">تنسيق شكل الجداول</button>
+                    <button type="button" class="settings-tab" data-settings-section="advanced" onclick="showSettingsSection('advanced')">خيارات متقدمة</button>
+                    <button type="button" class="settings-tab" data-settings-section="test-order" onclick="showSettingsSection('test-order')">الترتيب القياسي للفحوصات</button>
+                    <button type="button" class="settings-tab" data-settings-section="default-values" onclick="showSettingsSection('default-values')">تعديل القيم الافتراضية للجداول</button>
                 </div>
 
                 <div id="settingsSection-settings" class="settings-subpage active">
@@ -1649,8 +1652,10 @@ button{
                                 <select id="settingPatientTestsOrder">
                                     <option value="newest-top">الفحص الجديد في الأعلى — القديم في الأسفل</option>
                                     <option value="oldest-top">الفحص القديم في الأعلى — الجديد في الأسفل</option>
+                                    <option value="standard-auto">الترتيب القياسي الأوتوماتيكي — حسب أقسام المختبر</option>
                                 </select>
                                 <div style="font-size:12px;color:#666;margin-top:6px;">اختر ترتيب ظهور الفحوصات داخل منطقة patientTests.</div>
+                                <div style="font-size:12px;color:#666;margin-top:4px;">الخيار الثالث يرتّب الفحوصات تلقائيًا وفق أقسام المختبر، ويمكن ضبطه من تبويب «الترتيب القياسي للفحوصات».</div>
                             </div>
 
                             <div class="field full">
@@ -1986,6 +1991,92 @@ button{
 
                             <div class="actions" style="margin-top:10px;">
                                 <button class="btn btn-success" onclick="saveTableFormatSettings()">Save Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settingsSection-advanced" class="settings-subpage">
+                    <div class="panel">
+                        <div class="panel-header">خيارات متقدمة</div>
+                        <div class="panel-body">
+                            <div class="field full">
+                                <label>طريقة ظهور جداول الفحوصات عند اختيار فحص جديد</label>
+
+                                <label style="display:flex;align-items:flex-start;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                    <input id="settingFormFillModeEmpty" name="settingFormFillMode" type="radio" value="empty">
+                                    <span>الخيار العادي — تظهر الجداول فارغة كما هي</span>
+                                </label>
+
+                                <label style="display:flex;align-items:flex-start;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                    <input id="settingFormFillModeDefaults" name="settingFormFillMode" type="radio" value="defaults" checked>
+                                    <span>التعبئة بالقيم الافتراضية — تظهر الجداول مملوءة بالقيم الطبيعية القياسية ويعدّل الطبيب ما يلزم فقط (الخيار المحدد افتراضيًا)</span>
+                                </label>
+
+                                <div style="font-size:12px;color:#666;margin-top:8px;">
+                                    القيم الافتراضية تظهر فقط في الفحوصات الجديدة غير المحفوظة، ويُحفظ ما يعدّله الطبيب لكل مريض على حدة. الفحوصات المحفوظة سابقًا لا تتغير. فحص فصيلة الدم لا يحتوي قيمة افتراضية عمدًا لأنه ليس له قيمة طبيعية.
+                                </div>
+                            </div>
+
+                            <div class="actions" style="margin-top:10px;">
+                                <button class="btn btn-success" onclick="saveAdvancedSettings()">Save Settings</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settingsSection-test-order" class="settings-subpage">
+                    <div class="panel">
+                        <div class="panel-header">الترتيب القياسي الأوتوماتيكي للفحوصات</div>
+                        <div class="panel-body">
+
+                            <div style="font-size:13px;line-height:1.9;color:#333;">
+                                <strong>متى يُستعمل؟</strong>
+                                عند اختيار <em>«الترتيب القياسي الأوتوماتيكي»</em> في تبويب «المظهر وطريقة العرض» ← «طريقة عرض الفحوصات في patientTests». عندها تُرتَّب الفحوصات المختارة للمريض تلقائيًا (على الشاشة وفي الطباعة) بغض النظر عن ترتيب اختيارها، بينما يبقى الخياران اليدويان كما هما.
+
+                                <div style="margin-top:10px;"><strong>الترتيب المتبع وقواعده:</strong></div>
+                                <ol style="margin:6px 0 0;padding-inline-start:22px;">
+                                    <li><strong>التجميع حسب قسم المختبر (Laboratory section):</strong> وهو الأساس المتفق عليه عالميًا في تنظيم نتائج المختبر؛ فجدول HL7 رقم 0074 (Diagnostic Service Section ID) يعرّف الأقسام: Hematology (HM) وBlood Bank (BLB) وChemistry (CH) وSerology (SR) وImmunology (IMM) وVirology (VR) وMicrobiology (MB) وUrinalysis (URN)، ويصنّف LOINC الفحوصات بالطريقة نفسها (Class). وعلى هذا الأساس يكون التسلسل: الدم ← بنك الدم ← الكيمياء ← الهرمونات والفيتامينات ← المصليات والمناعة ← الأحياء الدقيقة والطفيليات ← البول ← البراز.</li>
+                                    <li><strong>داخل كل قسم تسلسل سريري معتاد:</strong> في الكيمياء: السكر (RBS ثم FBS ثم 2hpp ثم HbA1c) ← وظائف الكلى ← الكالسيوم ← وظائف الكبد ← حمض اليوريك ← الدهون ← التروبونين. وفي الهرمونات: الغدة الدرقية ← هرمونات الإخصاب والحمل ← PSA ← الفيتامينات. وفي المصليات: الفحوصات الالتهابية والروماتيزمية ← حمّى التيفويد والبروسيلا والضنك ← الفحوصات الفيروسية (HIV وHCV وHBsAg).</li>
+                                    <li><strong>الفحص الشامل قبل المفرد:</strong> مثل CBC قبل ESR في قسم الدم.</li>
+                                    <li><strong>الفحوصات الجديدة غير المصنّفة</strong> تُوضع تلقائيًا في القسم المناسب إن عُرف، وإلا في قسم «فحوصات أخرى» في آخر القائمة.</li>
+                                </ol>
+
+                                <div style="margin-top:10px;padding:8px 10px;background:#fff8e1;border:1px solid #ffe08a;border-radius:6px;">
+                                    <strong>توضيح مهم:</strong> لا يوجد معيار دولي ملزم (مثل ISO 15189 أو اعتماد CAP) يفرض تسلسلًا واحدًا للفحوصات داخل التقرير؛ هذه المعايير تشترط أن يكون التقرير واضحًا ودقيقًا وغير ملتبس. المتفق عليه عالميًا هو <u>تصنيف الفحوصات حسب أقسام المختبر</u> (HL7 وLOINC)، أما التسلسل بين الأقسام وداخلها فهو عُرف مهني شائع في أنظمة المختبرات ويختلف قليلًا من مختبر لآخر. لذلك وفّرنا هذا التبويب لتعديله بما يناسب معملك.
+                                </div>
+                            </div>
+
+                            <div class="field full" style="margin-top:14px;">
+                                <label>ضبط الترتيب (استخدم الأسهم لتغيير ترتيب الأقسام والفحوصات، أو القائمة لنقل فحص إلى قسم آخر)</label>
+                                <div id="standardOrderEditor" style="margin-top:8px;"></div>
+                            </div>
+
+                            <div class="actions" style="margin-top:10px;">
+                                <button class="btn btn-success" onclick="saveStandardOrderSettings()">Save Settings</button>
+                                <button class="btn btn-light" onclick="resetStandardOrderSettings()">إعادة الترتيب القياسي الافتراضي</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settingsSection-default-values" class="settings-subpage">
+                    <div class="panel">
+                        <div class="panel-header">تعديل القيم الافتراضية للجداول</div>
+                        <div class="panel-body">
+                            <div style="font-size:13px;line-height:1.9;color:#333;">
+                                هنا القيم الافتراضية المستخدمة حاليًا لكل فحص (تظهر عند فتح فحص جديد للمريض عند تفعيل «التعبئة بالقيم الافتراضية» في تبويب «خيارات متقدمة»). افتح أي فحص وعدّل القيمة التي تريدها ثم اضغط Save Settings. تعديلك يؤثر على الفحوصات الجديدة فقط، ولا يغيّر نتائج المرضى المحفوظة سابقًا. يمكنك الرجوع للقيم الأصلية في أي وقت لكل فحص أو لجميع الفحوصات. اترك الحقل فارغًا إن لم تُرِد قيمة افتراضية له.
+                            </div>
+
+                            <div id="defaultValuesModeNotice" style="display:none;margin-top:10px;padding:8px 10px;background:#fff8e1;border:1px solid #ffe08a;border-radius:6px;font-size:13px;">
+                                تنبيه: الخيار «العادي» (جداول فارغة) مفعّل حاليًا في تبويب «خيارات متقدمة»، لذلك لن تظهر القيم الافتراضية حتى تفعّل «التعبئة بالقيم الافتراضية».
+                            </div>
+
+                            <div id="defaultValuesEditor" style="margin-top:12px;"></div>
+
+                            <div class="actions" style="margin-top:10px;">
+                                <button class="btn btn-success" onclick="saveDefaultValuesSettings()">Save Settings</button>
+                                <button class="btn btn-light" onclick="resetAllDefaultValues()">الرجوع للقيم الافتراضية الأصلية لكل الفحوصات</button>
                             </div>
                         </div>
                     </div>
@@ -3147,7 +3238,7 @@ function saveDB(){
 
 function showSettingsSection(section){
 
-    if(section !== "forms" && section !== "settings" && section !== "appearance" && section !== "report-title-design" && section !== "table-format") {
+    if(section !== "forms" && section !== "settings" && section !== "appearance" && section !== "report-title-design" && section !== "table-format" && section !== "advanced" && section !== "test-order" && section !== "default-values") {
         section = "settings";
     }
 
@@ -3181,6 +3272,14 @@ function showSettingsSection(section){
         loadReportTitleDesignSettingsUI();
     }else if(section === "table-format"){
         loadTableFormatSettingsUI();
+    }else if(section === "advanced"){
+        loadAdvancedSettingsUI();
+    }else if(section === "test-order"){
+        standardOrderDraft = null;
+        renderStandardOrderEditor();
+    }else if(section === "default-values"){
+        defaultValuesDraft = null;
+        renderDefaultValuesEditor();
     }else{
         loadSettingsUI();
     }
@@ -8040,6 +8139,602 @@ function collectInlineResults(container){
     return results;
 }
 
+/* ==========================================================
+   Default (normal) result values
+   ----------------------------------------------------------
+   Used only to PRE-FILL the result fields of a new, unsaved
+   test card. The doctor edits only what differs for the
+   patient; whatever is on screen is what gets saved for that
+   patient (per patient, per test). Saved tests are never
+   touched. Controlled by Settings > "خيارات متقدمة".
+
+   Rows are matched by the row label (first fixed cell), so the
+   stored forms do not need to be modified.
+   Blood grouping is intentionally absent: there is no "normal"
+   blood group, so it must always be chosen by the technician.
+   ========================================================== */
+const LAB_DEFAULT_VALUES = {
+
+    /* ---- Haematology ---- */
+    cbc: {
+        "Wbc":"7.0", "Lym #":"2.1", "Mxd #":"0.6", "Neut #":"4.3",
+        "Lym %":"30.0", "Mxd %":"8.0", "Neut %":"62.0",
+        "Rbc":"4.5", "Hgb":"13.5", "Hct":"40.5",
+        "Mcv":"90.0", "Mch":"30.0", "Mchc":"333",
+        "Rdw-cv":"13.0", "Rdw-sd":"42.0", "Plt":"250"
+    },
+    esr: { "ESR":"6" },
+
+    /* ---- Parasitology / serology / rapid tests ---- */
+    bffm: { "BFFM":"No malaria parasite seen" },
+    hiv_hcv_hbsag: {
+        "HIV rapid test":"Negative",
+        "HCV rapid test":"Negative",
+        "HBsAg rapid test":"Negative"
+    },
+    widal_enterica: {
+        "O":"1/40", "OB":"1/20",
+        "Comment":"Insignificant for enterica"
+    },
+    widal_for_brucella: {
+        "Brucella abortus":"1/20",
+        "Brucella melitensis":"1/20",
+        "Comment":"Insignificant for brucella"
+    },
+    ict_malaria:  { "ICT malaria":"Negative (-ve)" },
+    ict_typhoid:  { "ICT typhoid":"Negative (-ve)" },
+    dengue_ict:   { "Dengue ICT":"Negative (-ve)" },
+    h_pylori_ag:  { "H.pylori Ag":"Negative (-ve)" },
+    h_pylori_ab:  { "H.pylori Ab":"Negative (-ve)" },
+    hcg_serum:    { "HCG serum":"Negative (-ve)" },
+    hcg_urine:    { "HCG urine":"Negative (-ve)" },
+    fob:          { "FOB":"Negative (-ve)" },
+    aso:          { "ASO":"Negative (-ve)" },
+    rf:           { "RF":"Negative" },
+    crp:          { "CRP":"0.3" },
+
+    /* ---- Urine / stool ---- */
+    urine_general: {
+        "Colour":"Yellow", "Reaction":"Acidic", "Sugar":"Nil",
+        "Acetone":"Nil", "Protein":"Nil", "Bile":"Nil",
+        "Pus cells":"0-2", "R.B.C’s":"0-2", "Epithelial cells":"+",
+        "Crystals":"Nil", "Cast":"Nil", "Mucus":"Nil", "Others":"Nil"
+    },
+    stool_general: {
+        "Colour":"Brown", "Consistency":"Formed", "Reaction":"Neutral",
+        "Mucus":"Nil", "Blood":"Nil", "Worms":"Nil",
+        "Pus cells":"Nil", "R.B.C’s":"Nil", "Cyst":"Nil",
+        "Trophozoits":"Nil", "Ova":"Nil",
+        "Undigested materials":"Nil", "Others":"Nil"
+    },
+
+    /* ---- Blood sugar ---- */
+    rbs:    { "RBS":"110" },
+    fbs:    { "FBS":"90" },
+    "2hpp": { "2HPP":"110" },
+    hba1c:  { "HbA1C":"5.2" },
+
+    /* ---- Chemistry ---- */
+    uric_acid: { "Uric acid":"4.5 mg/dl" },
+    ca_:       { "Ca+":"9.5" },
+    vit_d:     { "Vit D":"45" },
+    vit_b12:   { "Vit B12":"450" },
+    psa:       { "PSA":"1.0 ng/ml" },
+    troponin:  { "Troponin":"Negative" },
+    cholesterol:   { "Cholesterol":"160" },
+    triglycerides: { "Triglycerides":"110" },
+
+    /* ---- Hormones ---- */
+    lh:  { "LH":"5.0" },
+    fsh: { "FSH":"5.0" },
+    prl: { "PRL":"250" },
+    tft: { "TSH":"2.0", "T3":"2.0", "T4":"110" },
+
+    /* ---- Liver / renal function ---- */
+    lft: {
+        "T.Protein":"7.4", "Albumin":"4.4", "T.Bil":"0.7",
+        "D.Bil":"0.3", "ALP":"120", "AST":"22", "ALT":"20"
+    },
+    rft: { "urea":"28 mg/dl", "creatinine":"0.9 mg/dl" }
+};
+
+function labDefaultSlug(value){
+    return String(value ?? "").trim().toLowerCase().replace(/[^a-z0-9_-]/g,"_");
+}
+
+function labDefaultLabel(value){
+    return String(value ?? "").trim().toLowerCase().replace(/:+\s*$/,"").replace(/\s+/g," ");
+}
+
+/* true unless the doctor chose the "normal (empty tables)" option */
+function isDefaultFillEnabled(){
+    return !(db && db.settings && db.settings.formFillMode === "empty");
+}
+
+/* Returns { "section_row_col": value } for the input/select/multiline cells of a form. */
+/* Original (built-in) default values of a form, keyed by normalized row label. */
+function getBuiltInDefaultLookup(form){
+    const lookup = {};
+    if(!form) return lookup;
+    const candidates = [form.id, labDefaultSlug(form.code), labDefaultSlug(form.name)];
+    let profile = null;
+    for(const candidate of candidates){
+        if(candidate && Object.prototype.hasOwnProperty.call(LAB_DEFAULT_VALUES, candidate)){
+            profile = LAB_DEFAULT_VALUES[candidate];
+            break;
+        }
+    }
+    if(profile){
+        Object.keys(profile).forEach(label => { lookup[labDefaultLabel(label)] = profile[label]; });
+    }
+    return lookup;
+}
+
+function getFormDefaultValues(form){
+    const result = {};
+    if(!form || !Array.isArray(form.sections)) return result;
+
+    const lookup = getBuiltInDefaultLookup(form);
+
+    /* Values edited by the doctor (Settings > تعديل القيم الافتراضية للجداول) override the built-in ones. */
+    const custom = db && db.settings && db.settings.customDefaultValues && db.settings.customDefaultValues[form.id];
+    if(custom && typeof custom === "object"){
+        Object.keys(custom).forEach(label => { lookup[labDefaultLabel(label)] = String(custom[label] ?? ""); });
+    }
+    if(!Object.keys(lookup).length) return result;
+
+    form.sections.forEach((section, sectionIndex) => {
+        (section.rows || []).forEach((row, rowIndex) => {
+            const cells = row.cells || [];
+            const labelCell = cells.find(c => c && c.type === "fixed" && String(c.label || "").trim());
+            if(!labelCell) return;
+            const value = lookup[labDefaultLabel(labelCell.label)];
+            if(value === undefined) return;
+            cells.forEach((cell, colIndex) => {
+                if(!cell) return;
+                if(cell.type === "input" || cell.type === "multiline"){
+                    result[sectionIndex + "_" + rowIndex + "_" + colIndex] = value;
+                }else if(cell.type === "select" && Array.isArray(cell.options) && cell.options.includes(value)){
+                    result[sectionIndex + "_" + rowIndex + "_" + colIndex] = value;
+                }
+            });
+        });
+    });
+    return result;
+}
+
+function loadAdvancedSettingsUI(){
+    const mode = (db.settings && db.settings.formFillMode) === "empty" ? "empty" : "defaults";
+    const emptyRadio = document.getElementById("settingFormFillModeEmpty");
+    const defaultsRadio = document.getElementById("settingFormFillModeDefaults");
+    if(emptyRadio) emptyRadio.checked = mode === "empty";
+    if(defaultsRadio) defaultsRadio.checked = mode === "defaults";
+}
+
+function saveAdvancedSettings(){
+    const emptyRadio = document.getElementById("settingFormFillModeEmpty");
+    db.settings.formFillMode = (emptyRadio && emptyRadio.checked) ? "empty" : "defaults";
+    saveDB();
+    showMessage("Settings saved.");
+}
+
+/* ==========================================================
+   Standard automatic test order  (patientTests display mode
+   "standard-auto", the third option in Appearance settings)
+   ----------------------------------------------------------
+   Tests are grouped by laboratory section/discipline, and each
+   section keeps a fixed clinical sequence inside it. The sections
+   and their order can be edited in Settings > "الترتيب القياسي".
+   The two manual modes (newest-top / oldest-top) are unchanged.
+   ========================================================== */
+const STANDARD_TEST_ORDER_DEFAULT = [
+    { id:"hematology", code:"HM",  name:"Hematology", nameAr:"أمراض الدم (الهيماتولوجي)",
+      forms:["cbc","esr"] },
+    { id:"blood-bank", code:"BLB", name:"Blood bank", nameAr:"بنك الدم",
+      forms:["blood_grouping_abo_"] },
+    { id:"chemistry",  code:"CH",  name:"Clinical chemistry", nameAr:"الكيمياء السريرية",
+      forms:["rbs","fbs","2hpp","hba1c","rft","ca_","lft","uric_acid","cholesterol","triglycerides","troponin"] },
+    { id:"endocrine",  code:"CH / IMM", name:"Endocrinology & immunoassay (hormones, vitamins, tumour markers)",
+      nameAr:"الهرمونات والفيتامينات والواسمات الورمية",
+      forms:["tft","lh","fsh","prl","hcg_serum","hcg_urine","psa","vit_d","vit_b12"] },
+    { id:"serology",   code:"SR / IMM / VR", name:"Serology, immunology & virology", nameAr:"المصليات والمناعة والفيروسات",
+      forms:["aso","rf","crp","widal_enterica","widal_for_brucella","ict_typhoid","dengue_ict","h_pylori_ab","hiv_hcv_hbsag"] },
+    { id:"parasitology", code:"MB", name:"Microbiology & parasitology", nameAr:"الأحياء الدقيقة والطفيليات",
+      forms:["bffm","ict_malaria"] },
+    { id:"urinalysis", code:"URN", name:"Urinalysis", nameAr:"تحليل البول",
+      forms:["urine_general"] },
+    { id:"stool",      code:"", name:"Stool examination", nameAr:"فحوصات البراز",
+      forms:["stool_general","fob","h_pylori_ag"] }
+];
+
+function standardOrderSlug(value){
+    return String(value ?? "").trim().toLowerCase().replace(/[^a-z0-9_-]/g,"_");
+}
+
+/* Returns the active configuration (saved one, or the default), always covering every existing form. */
+function getStandardOrderConfig(){
+    const saved = db && db.settings && Array.isArray(db.settings.standardTestOrder)
+        ? db.settings.standardTestOrder
+        : null;
+    const source = (saved && saved.length) ? saved : STANDARD_TEST_ORDER_DEFAULT;
+    const forms = (db && db.forms) || {};
+    const placed = new Set();
+
+    const config = source.map(section => ({
+        id: String(section.id || ""),
+        code: String(section.code || ""),
+        name: String(section.name || ""),
+        nameAr: String(section.nameAr || section.name || ""),
+        forms: (Array.isArray(section.forms) ? section.forms : []).filter(formId => {
+            if(!forms[formId] || placed.has(formId)) return false;
+            placed.add(formId);
+            return true;
+        })
+    }));
+
+    /* Forms not placed yet (e.g. created later by the user). */
+    const defaultSectionOf = {};
+    STANDARD_TEST_ORDER_DEFAULT.forEach(section => section.forms.forEach(id => { defaultSectionOf[id] = section.id; }));
+
+    const unplaced = Object.values(forms)
+        .filter(form => form && form.id && !placed.has(form.id))
+        .sort((a, b) => (Number(a.testNo) || 1e9) - (Number(b.testNo) || 1e9) || String(a.name || "").localeCompare(String(b.name || "")));
+
+    unplaced.forEach(form => {
+        const hint = [form.id, standardOrderSlug(form.code), standardOrderSlug(form.name)]
+            .map(key => defaultSectionOf[key]).find(Boolean);
+        let target = hint ? config.find(section => section.id === hint) : null;
+        if(!target){
+            target = config.find(section => section.id === "other");
+            if(!target){
+                target = { id:"other", code:"", name:"Other tests", nameAr:"فحوصات أخرى (غير مصنّفة)", forms:[] };
+                config.push(target);
+            }
+        }
+        target.forms.push(form.id);
+    });
+
+    return config;
+}
+
+/* Sorts a list of form ids into the standard order. */
+function sortFormIdsByStandardOrder(formIds){
+    const position = {};
+    let index = 0;
+    getStandardOrderConfig().forEach(section => section.forms.forEach(formId => { position[formId] = index++; }));
+    return Array.from(formIds).sort((a, b) =>
+        ((a in position) ? position[a] : 1e9) - ((b in position) ? position[b] : 1e9)
+    );
+}
+
+/* ---------- Editor (Settings > الترتيب القياسي) ---------- */
+let standardOrderDraft = null;
+
+function standardOrderButton(text, title, handler, disabled){
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-light btn-small";
+    button.textContent = text;
+    button.title = title;
+    button.disabled = !!disabled;
+    button.onclick = handler;
+    return button;
+}
+
+function renderStandardOrderEditor(){
+    const host = document.getElementById("standardOrderEditor");
+    if(!host) return;
+    if(!standardOrderDraft) standardOrderDraft = getStandardOrderConfig();
+    host.innerHTML = "";
+
+    standardOrderDraft.forEach((section, sectionIndex) => {
+        const box = document.createElement("div");
+        box.style.cssText = "border:1px solid #d9d9d9;border-radius:6px;margin-bottom:10px;background:#fff;";
+
+        const head = document.createElement("div");
+        head.style.cssText = "display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f5f5f5;border-bottom:1px solid #d9d9d9;font-weight:700;";
+        const title = document.createElement("span");
+        title.style.cssText = "flex:1;";
+        title.innerHTML = (sectionIndex + 1) + " — " + esc(section.nameAr) + " — " + esc(section.name)
+            + (section.code ? ' <span style="font-weight:400;color:#666;">(' + esc(section.code) + ')</span>' : "");
+        head.appendChild(title);
+        head.appendChild(standardOrderButton("▲", "نقل القسم للأعلى", () => standardOrderMoveSection(sectionIndex, -1), sectionIndex === 0));
+        head.appendChild(standardOrderButton("▼", "نقل القسم للأسفل", () => standardOrderMoveSection(sectionIndex, 1), sectionIndex === standardOrderDraft.length - 1));
+        box.appendChild(head);
+
+        if(!section.forms.length){
+            const empty = document.createElement("div");
+            empty.style.cssText = "padding:8px 10px;color:#888;font-size:12px;";
+            empty.textContent = "لا توجد فحوصات في هذا القسم.";
+            box.appendChild(empty);
+        }
+
+        section.forms.forEach((formId, formIndex) => {
+            const form = db.forms[formId];
+            if(!form) return;
+            const row = document.createElement("div");
+            row.style.cssText = "display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid #f0f0f0;";
+
+            const name = document.createElement("span");
+            name.style.cssText = "flex:1;";
+            name.textContent = (formIndex + 1) + ". " + (form.name || formId);
+            row.appendChild(name);
+
+            const select = document.createElement("select");
+            select.style.cssText = "max-width:230px;";
+            select.title = "نقل الفحص إلى قسم آخر";
+            standardOrderDraft.forEach((target, targetIndex) => {
+                const option = document.createElement("option");
+                option.value = String(targetIndex);
+                option.textContent = target.nameAr;
+                option.selected = targetIndex === sectionIndex;
+                select.appendChild(option);
+            });
+            select.onchange = () => standardOrderMoveFormToSection(sectionIndex, formIndex, Number(select.value));
+            row.appendChild(select);
+
+            row.appendChild(standardOrderButton("▲", "نقل الفحص للأعلى", () => standardOrderMoveForm(sectionIndex, formIndex, -1), formIndex === 0));
+            row.appendChild(standardOrderButton("▼", "نقل الفحص للأسفل", () => standardOrderMoveForm(sectionIndex, formIndex, 1), formIndex === section.forms.length - 1));
+            box.appendChild(row);
+        });
+
+        host.appendChild(box);
+    });
+}
+
+function standardOrderMoveSection(index, step){
+    const target = index + step;
+    if(!standardOrderDraft || target < 0 || target >= standardOrderDraft.length) return;
+    const item = standardOrderDraft.splice(index, 1)[0];
+    standardOrderDraft.splice(target, 0, item);
+    renderStandardOrderEditor();
+}
+
+function standardOrderMoveForm(sectionIndex, formIndex, step){
+    const list = standardOrderDraft && standardOrderDraft[sectionIndex] && standardOrderDraft[sectionIndex].forms;
+    const target = formIndex + step;
+    if(!list || target < 0 || target >= list.length) return;
+    const item = list.splice(formIndex, 1)[0];
+    list.splice(target, 0, item);
+    renderStandardOrderEditor();
+}
+
+function standardOrderMoveFormToSection(sectionIndex, formIndex, targetSectionIndex){
+    if(!standardOrderDraft || targetSectionIndex === sectionIndex || !standardOrderDraft[targetSectionIndex]) return;
+    const item = standardOrderDraft[sectionIndex].forms.splice(formIndex, 1)[0];
+    standardOrderDraft[targetSectionIndex].forms.push(item);
+    renderStandardOrderEditor();
+}
+
+function saveStandardOrderSettings(){
+    if(!standardOrderDraft) return;
+    db.settings.standardTestOrder = standardOrderDraft.map(section => ({
+        id: section.id, code: section.code, name: section.name, nameAr: section.nameAr,
+        forms: section.forms.slice()
+    }));
+    saveDB();
+    showMessage("Settings saved.");
+}
+
+function resetStandardOrderSettings(){
+    if(!confirm("إعادة الترتيب القياسي إلى الوضع الافتراضي؟")) return;
+    delete db.settings.standardTestOrder;
+    saveDB();
+    standardOrderDraft = null;
+    renderStandardOrderEditor();
+    showMessage("Standard order restored.");
+}
+
+/* ==========================================================
+   Default values editor  (Settings > تعديل القيم الافتراضية للجداول)
+   ----------------------------------------------------------
+   The built-in values (LAB_DEFAULT_VALUES) are never modified.
+   Changes are stored separately in db.settings.customDefaultValues
+   as { formId: { "row label": "value" } } and are layered on top of
+   the built-in values. Deleting them restores the original values.
+   ========================================================== */
+let defaultValuesDraft = null;
+
+/* Editable rows of a form: one entry per row label that has an input/select/multiline cell. */
+function getDefaultValuesEditorRows(form){
+    const rows = [];
+    const seen = new Set();
+    (form && Array.isArray(form.sections) ? form.sections : []).forEach(section => {
+        (section.rows || []).forEach(row => {
+            const cells = Array.isArray(row.cells) ? row.cells : [];
+            const labelCell = cells.find(c => c && c.type === "fixed" && String(c.label || "").trim());
+            const editable = cells.find(c => c && (c.type === "input" || c.type === "select" || c.type === "multiline"));
+            if(!labelCell || !editable) return;
+            const normalized = labDefaultLabel(labelCell.label);
+            if(seen.has(normalized)) return;
+            seen.add(normalized);
+
+            const hint = cells
+                .filter(c => c && c !== labelCell && (c.type === "fixed" || c.type === "reference"))
+                .map(c => String((c.type === "reference" && c.reference) ? c.reference : (c.label || "")).trim())
+                .filter(Boolean)
+                .join("  ·  ");
+
+            rows.push({
+                label: String(labelCell.label).trim(),
+                normalized: normalized,
+                type: editable.type,
+                options: Array.isArray(editable.options) ? editable.options : [],
+                hint: hint,
+                section: String(section.title || "")
+            });
+        });
+    });
+    return rows;
+}
+
+function defaultValuesEffective(form, row){
+    const custom = defaultValuesDraft && defaultValuesDraft[form.id];
+    if(custom){
+        const key = Object.keys(custom).find(label => labDefaultLabel(label) === row.normalized);
+        if(key !== undefined) return String(custom[key] ?? "");
+    }
+    const builtIn = getBuiltInDefaultLookup(form)[row.normalized];
+    return builtIn === undefined ? "" : String(builtIn);
+}
+
+function defaultValuesBuiltIn(form, row){
+    const builtIn = getBuiltInDefaultLookup(form)[row.normalized];
+    return builtIn === undefined ? "" : String(builtIn);
+}
+
+function setDefaultValueDraft(formId, label, value){
+    if(!defaultValuesDraft) defaultValuesDraft = {};
+    if(!defaultValuesDraft[formId]) defaultValuesDraft[formId] = {};
+    const normalized = labDefaultLabel(label);
+    Object.keys(defaultValuesDraft[formId]).forEach(existing => {
+        if(labDefaultLabel(existing) === normalized) delete defaultValuesDraft[formId][existing];
+    });
+    defaultValuesDraft[formId][label] = String(value ?? "");
+}
+
+function renderDefaultValuesEditor(){
+    const host = document.getElementById("defaultValuesEditor");
+    if(!host) return;
+    if(!defaultValuesDraft){
+        defaultValuesDraft = deepClone((db.settings && db.settings.customDefaultValues) || {});
+    }
+
+    const openIds = new Set(
+        Array.from(host.querySelectorAll("details[open]")).map(el => el.dataset.formId)
+    );
+    host.innerHTML = "";
+
+    const notice = document.getElementById("defaultValuesModeNotice");
+    if(notice){
+        notice.style.display = (db.settings && db.settings.formFillMode === "empty") ? "" : "none";
+    }
+
+    Object.values(db.forms || {}).forEach(form => {
+        if(!form || !form.id) return;
+        const rows = getDefaultValuesEditorRows(form);
+        if(!rows.length) return;
+
+        const details = document.createElement("details");
+        details.dataset.formId = form.id;
+        details.open = openIds.has(form.id);
+        details.style.cssText = "border:1px solid #d9d9d9;border-radius:6px;margin-bottom:8px;background:#fff;";
+
+        const modifiedCount = rows.filter(row => defaultValuesEffective(form, row) !== defaultValuesBuiltIn(form, row)).length;
+
+        const summary = document.createElement("summary");
+        summary.style.cssText = "cursor:pointer;padding:8px 10px;background:#f5f5f5;font-weight:700;border-radius:6px;";
+        summary.innerHTML = esc(form.code && form.code !== form.name ? form.code + " — " + form.name : (form.name || form.id))
+            + (modifiedCount ? ' <span style="font-weight:400;color:#b45309;">(معدّل: ' + modifiedCount + ')</span>' : "");
+        details.appendChild(summary);
+
+        rows.forEach(row => {
+            const line = document.createElement("div");
+            line.style.cssText = "display:flex;align-items:center;gap:10px;padding:6px 10px;border-bottom:1px solid #f0f0f0;flex-wrap:wrap;";
+
+            const label = document.createElement("span");
+            label.style.cssText = "min-width:170px;font-weight:600;";
+            label.textContent = (row.section ? row.section + " › " : "") + row.label;
+            line.appendChild(label);
+
+            const current = defaultValuesEffective(form, row);
+            let control;
+            if(row.type === "select"){
+                control = document.createElement("select");
+                const blank = document.createElement("option");
+                blank.value = ""; blank.textContent = "— بدون قيمة افتراضية —";
+                control.appendChild(blank);
+                row.options.forEach(optionValue => {
+                    const option = document.createElement("option");
+                    option.value = optionValue; option.textContent = optionValue;
+                    option.selected = optionValue === current;
+                    control.appendChild(option);
+                });
+                control.onchange = () => setDefaultValueDraft(form.id, row.label, control.value);
+            }else if(row.type === "multiline"){
+                control = document.createElement("textarea");
+                control.rows = 2;
+                control.value = current;
+                control.oninput = () => setDefaultValueDraft(form.id, row.label, control.value);
+            }else{
+                control = document.createElement("input");
+                control.type = "text";
+                control.value = current;
+                control.oninput = () => setDefaultValueDraft(form.id, row.label, control.value);
+            }
+            control.style.cssText = "flex:1;min-width:180px;max-width:360px;";
+            line.appendChild(control);
+
+            if(row.hint){
+                const hint = document.createElement("span");
+                hint.style.cssText = "font-size:12px;color:#777;";
+                hint.textContent = row.hint;
+                line.appendChild(hint);
+            }
+            details.appendChild(line);
+        });
+
+        const footer = document.createElement("div");
+        footer.style.cssText = "padding:8px 10px;";
+        const resetButton = document.createElement("button");
+        resetButton.type = "button";
+        resetButton.className = "btn btn-light btn-small";
+        resetButton.textContent = "الرجوع للقيم الافتراضية الأصلية لهذا الفحص";
+        resetButton.onclick = () => resetFormDefaultValues(form.id);
+        footer.appendChild(resetButton);
+        details.appendChild(footer);
+
+        host.appendChild(details);
+    });
+}
+
+function saveDefaultValuesSettings(){
+    if(!defaultValuesDraft) return;
+    const clean = {};
+    Object.keys(defaultValuesDraft).forEach(formId => {
+        const form = db.forms[formId];
+        const map = defaultValuesDraft[formId] || {};
+        const builtIn = form ? getBuiltInDefaultLookup(form) : {};
+        Object.keys(map).forEach(label => {
+            const value = String(map[label] ?? "");
+            const standard = builtIn[labDefaultLabel(label)];
+            if(form && (standard === undefined ? "" : String(standard)) === value) return; /* same as the original value */
+            if(!clean[formId]) clean[formId] = {};
+            clean[formId][label] = value;
+        });
+    });
+    if(Object.keys(clean).length){
+        db.settings.customDefaultValues = clean;
+    }else{
+        delete db.settings.customDefaultValues;
+    }
+    defaultValuesDraft = deepClone(clean);
+    saveDB();
+    renderDefaultValuesEditor();
+    showMessage("Settings saved.");
+}
+
+function resetFormDefaultValues(formId){
+    if(!confirm("الرجوع للقيم الافتراضية الأصلية لهذا الفحص؟")) return;
+    if(defaultValuesDraft) delete defaultValuesDraft[formId];
+    if(db.settings.customDefaultValues){
+        delete db.settings.customDefaultValues[formId];
+        if(!Object.keys(db.settings.customDefaultValues).length) delete db.settings.customDefaultValues;
+    }
+    saveDB();
+    renderDefaultValuesEditor();
+    showMessage("Default values restored.");
+}
+
+function resetAllDefaultValues(){
+    if(!confirm("الرجوع إلى القيم الافتراضية الأصلية لكل الفحوصات؟ سيتم حذف كل تعديلاتك على القيم الافتراضية.")) return;
+    delete db.settings.customDefaultValues;
+    defaultValuesDraft = {};
+    saveDB();
+    renderDefaultValuesEditor();
+    showMessage("Default values restored.");
+}
+
 function renderInlineFormCard(form,test,mode){
     normalizeForm(form);
     const card=document.createElement("article");
@@ -8049,6 +8744,13 @@ function renderInlineFormCard(form,test,mode){
         ? Number(form.testNo)
         : (test ? test.number : (inlineDraftTestIds[form.id] || "NEW"));
     const existing = test ? (test.results || {}) : (inlineDraftResults[form.id] || {});
+    /* Default values apply only to a new, unsaved card, and only for fields the doctor has not edited yet. */
+    const defaultValues = (!test && isDefaultFillEnabled()) ? getFormDefaultValues(form) : null;
+    const initialValue = key => {
+        if(existing[key]) return existing[key];
+        if(defaultValues && !Object.prototype.hasOwnProperty.call(existing,key)) return defaultValues[key] || "";
+        return "";
+    };
     const header=document.createElement("div");
     header.className="inline-test-head";
     if(test) card.dataset.testId=test.id;
@@ -8090,7 +8792,7 @@ function renderInlineFormCard(form,test,mode){
                     input.style.backgroundColor=cellBackgroundColor;
                     input.dataset.key=key;
                     input.dataset.formId=form.id;
-                    input.value=existing[key] || "";
+                    input.value=initialValue(key);
                     td.appendChild(input);
                 }else if(cell.type === "select"){
                     const select=document.createElement("select");
@@ -8102,14 +8804,14 @@ function renderInlineFormCard(form,test,mode){
                     blank.value=""; blank.textContent=""; select.appendChild(blank);
                     (cell.options || []).forEach(v=>{
                         const option=document.createElement("option");
-                        option.value=v; option.textContent=v; option.selected=existing[key]===v;
+                        option.value=v; option.textContent=v; option.selected=initialValue(key)===v;
                         select.appendChild(option);
                     });
                     td.appendChild(select);
                 }else if(cell.type === "multiline"){
                     const ta=document.createElement("textarea");
                     ta.className="result-input"; ta.style.backgroundColor=cellBackgroundColor; ta.dataset.key=key; ta.dataset.formId=form.id;
-                    ta.rows=2; ta.value=existing[key] || ""; td.appendChild(ta);
+                    ta.rows=2; ta.value=initialValue(key); td.appendChild(ta);
                 }else{
                     td.textContent=(cell.type === "reference" && cell.reference) ? cell.reference : (cell.label || "");
                     if(cell.type === "fixed") td.className="result-fixed";
@@ -8205,9 +8907,11 @@ function renderInlineWorkspace(){
         return;
     }
     const formOrder = Array.from(activeInlineForms);
-    const displayOrder = ((db.settings && db.settings.patientTestsOrder) || "newest-top") === "oldest-top"
-        ? formOrder
-        : formOrder.reverse();
+    const displayOrder = ((db.settings && db.settings.patientTestsOrder) || "newest-top") === "standard-auto"
+        ? sortFormIdsByStandardOrder(formOrder)
+        : (((db.settings && db.settings.patientTestsOrder) || "newest-top") === "oldest-top"
+            ? formOrder
+            : formOrder.reverse());
     displayOrder.forEach(formId=>{
         const form=db.forms[formId];
         if(!form) return;
