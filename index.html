@@ -7377,12 +7377,12 @@ function buildPrintReport(test){
    contains the full header (logos + hospital name), the patient data
    and the tests bar, followed by the tests that fit on that page.
    This does not depend on any browser-specific print feature.
-   Page sizes are measured at A4 printable width (194mm) and use a
-   page height that is safe for both A4 and Letter paper.
+   Page sizes are measured at A4 printable width (194mm); the report is printed on A4
+   paper (8mm margins), so the page height used for the layout is exact.
    If the measurement is not possible, the previous single-flow
    report is printed unchanged.
    ========================================================== */
-const PRINT_PAGE_CONTENT_HEIGHT_PX = 955;
+const PRINT_PAGE_CONTENT_HEIGHT_PX = 1061;
 
 /* While the report is printed, the application screen is removed from the layout and #printArea is
    placed in the normal document flow, so that the page breaks between report pages are always honoured
@@ -7394,6 +7394,7 @@ function applyPrintNormalFlow(){
         style = document.createElement("style");
         style.id = "printNormalFlowStyle";
         style.textContent = `@media print{
+            @page{ size:A4 portrait; margin:8mm; }
             body > *:not(#printArea):not(script):not(style){ display:none !important; }
             #printArea{ position:static !important; left:auto !important; top:auto !important; }
         }`;
@@ -7432,9 +7433,11 @@ function paginatePrintReport(headerHtml, blocks, footerHtml, wrapperStyle, split
         const footerBottomMargin = footerHtml
             ? Math.min(200, Math.max(0, Number(db.settings.footerBottomMargin) || 0))
             : 0;
-        const footerReserve = footerHtml ? footerHeight + footerBottomMargin + 4 : 0;
+        const footerReserve = footerHtml ? footerHeight + footerBottomMargin : 0;
 
-        const pageBudget = (PRINT_PAGE_CONTENT_HEIGHT_PX - headerHeight - footerReserve) * 0.985 - 6;
+        /* Exact space for the tests: the page, minus the header and the footer, minus 2px
+           (8px when there is no footer, because then nothing else protects the page bottom). */
+        const pageBudget = PRINT_PAGE_CONTENT_HEIGHT_PX - headerHeight - footerReserve - (footerHtml ? 2 : 8);
         if(!(pageBudget > 150)) return null;
 
         const blockEls = Array.from(area.querySelectorAll(".print-measure-block"));
@@ -7702,7 +7705,7 @@ function buildPrintAllReport(tests){
         return paginatedPages.map((pageHtml, pageIndex) => `
         <div class="print-report-page" style="${printWrapperStyle}${pageIndex > 0 ? "page-break-before:always;break-before:page;" : ""}">
             ${printHeaderHtml}
-            ${pageHtml}
+            ${pageHtml.join("")}
         </div>
         `).join("") + printFooterHtml;
     }
