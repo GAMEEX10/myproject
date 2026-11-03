@@ -7370,6 +7370,170 @@ function buildPrintReport(test){
 }
 
 
+/* ==========================================================
+   Report header on EVERY printed page
+   ----------------------------------------------------------
+   The report is split into pages by the system itself: every page
+   contains the full header (logos + hospital name), the patient data
+   and the tests bar, followed by the tests that fit on that page.
+   This does not depend on any browser-specific print feature.
+   Page sizes are measured at A4 printable width (194mm) and use a
+   page height that is safe for both A4 and Letter paper.
+   If the measurement is not possible, the previous single-flow
+   report is printed unchanged.
+   ========================================================== */
+const PRINT_PAGE_CONTENT_HEIGHT_PX = 955;
+
+/* While the report is printed, the application screen is removed from the layout and #printArea is
+   placed in the normal document flow, so that the page breaks between report pages are always honoured
+   (an absolutely positioned container does not always fragment correctly in every browser).
+   The rules are active in print only. */
+function applyPrintNormalFlow(){
+    let style = document.getElementById("printNormalFlowStyle");
+    if(!style){
+        style = document.createElement("style");
+        style.id = "printNormalFlowStyle";
+        style.textContent = `@media print{
+            body > *:not(#printArea):not(script):not(style){ display:none !important; }
+            #printArea{ position:static !important; left:auto !important; top:auto !important; }
+        }`;
+        document.head.appendChild(style);
+    }
+}
+
+
+function paginatePrintReport(headerHtml, blocks, footerHtml, wrapperStyle, splitRows){
+    const area = document.getElementById("printArea");
+    if(!area || !blocks.length) return null;
+
+    const savedHtml = area.innerHTML;
+    const savedStyle = area.getAttribute("style");
+    let pages = null;
+
+    try{
+        area.style.setProperty("display","block","important");
+        area.style.setProperty("position","absolute","important");
+        area.style.setProperty("left","-100000px","important");
+        area.style.setProperty("top","0","important");
+        area.style.setProperty("width","194mm","important");
+        area.style.setProperty("visibility","hidden","important");
+
+        area.innerHTML = `
+            <div style="${wrapperStyle}display:flow-root;">
+                <div class="print-measure-header" style="display:flow-root;">${headerHtml}</div>
+                <div class="print-measure-footer" style="display:flow-root;">${footerHtml}</div>
+                ${blocks.map(block => `<div class="print-measure-block" style="display:flow-root;">${block}</div>`).join("")}
+            </div>
+        `;
+
+        const headerHeight = area.querySelector(".print-measure-header").getBoundingClientRect().height;
+        const footerEl = area.querySelector(".print-measure-footer");
+        const footerHeight = footerHtml ? footerEl.getBoundingClientRect().height : 0;
+        const footerBottomMargin = footerHtml
+            ? Math.min(200, Math.max(0, Number(db.settings.footerBottomMargin) || 0))
+            : 0;
+        const footerReserve = footerHtml ? footerHeight + footerBottomMargin + 4 : 0;
+
+        const pageBudget = (PRINT_PAGE_CONTENT_HEIGHT_PX - headerHeight - footerReserve) * 0.985 - 6;
+        if(!(pageBudget > 150)) return null;
+
+        const blockEls = Array.from(area.querySelectorAll(".print-measure-block"));
+        if(blockEls.length !== blocks.length) return null;
+
+        pages = [[]];
+        let remaining = pageBudget;
+        const currentPage = () => pages[pages.length - 1];
+        const newPage = () => { pages.push([]); remaining = pageBudget; };
+
+        for(let b = 0; b < blocks.length; b++){
+            const blockEl = blockEls[b];
+            const blockHeight = blockEl.getBoundingClientRect().height;
+
+            if(blockHeight <= remaining){
+                currentPage().push(blocks[b]);
+                remaining -= blockHeight;
+                continue;
+            }
+
+            if(!splitRows && blockHeight <= pageBudget){
+                if(currentPage().length) newPage();
+                currentPage().push(blocks[b]);
+                remaining -= blockHeight;
+                continue;
+            }
+
+            /* The test does not fit in the remaining space: continue it row by row on the next page(s). */
+            const wrapper = blockEl.firstElementChild;
+            const table = wrapper && wrapper.querySelector("table");
+            if(!wrapper || !table){
+                if(currentPage().length) newPage();
+                currentPage().push(blocks[b]);
+                remaining -= blockHeight;
+                continue;
+            }
+
+            const rows = Array.from(table.rows);
+            const rowHeights = rows.map(row => row.getBoundingClientRect().height);
+            const overhead = Math.max(0, blockHeight - rowHeights.reduce((sum, h) => sum + h, 0));
+            const isTitleRow = row => !!row.querySelector("th.section-print-title");
+            const titleEl = wrapper.querySelector(".print-table-title");
+
+            let i = 0;
+            while(i < rows.length){
+                const first = i === 0;
+                const available = remaining - (first ? overhead : 0);
+
+                if(rowHeights[i] > available && currentPage().length){
+                    newPage();
+                    continue;
+                }
+
+                let used = 0;
+                let j = i;
+                while(j < rows.length && used + rowHeights[j] <= available){
+                    used += rowHeights[j];
+                    j++;
+                }
+                if(j === i){
+                    used = rowHeights[j];
+                    j++;
+                }
+                if(j < rows.length && j - 1 > i && isTitleRow(rows[j - 1])){
+                    j--;
+                    used -= rowHeights[j];
+                }
+
+                const part = wrapper.cloneNode(false);
+                if(!first) part.style.marginTop = "0";
+                if(first && titleEl) part.appendChild(titleEl.cloneNode(true));
+                const partTable = table.cloneNode(false);
+                const partBody = document.createElement("tbody");
+                rows.slice(i, j).forEach(row => partBody.appendChild(row.cloneNode(true)));
+                partTable.appendChild(partBody);
+                part.appendChild(partTable);
+
+                currentPage().push(part.outerHTML);
+                remaining -= used + (first ? overhead : 0);
+                i = j;
+                if(i < rows.length) newPage();
+            }
+        }
+
+        pages = pages.filter(page => page.length);
+    }catch(error){
+        pages = null;
+    }finally{
+        area.innerHTML = savedHtml;
+        if(savedStyle === null){
+            area.removeAttribute("style");
+        }else{
+            area.setAttribute("style", savedStyle);
+        }
+    }
+
+    return pages && pages.length ? pages : null;
+}
+
 function buildPrintAllReport(tests){
 
     if(!Array.isArray(tests) || !tests.length){
@@ -7450,17 +7614,7 @@ function buildPrintAllReport(tests){
         </div>
     `;
 
-    let html = `
-        <div style="
-            font-family:Arial,Helvetica,sans-serif;
-            font-size:10px;
-            line-height:1.15;
-            color:#000;
-            background:#fff;
-            width:100%;
-            ${getPrintTableStyleVariables()}
-        ">
-
+    const printHeaderHtml = `
             ${buildPrintHeader()}
 
             <div style="
@@ -7480,13 +7634,22 @@ function buildPrintAllReport(tests){
             ${orderBarHtml}
     `;
 
+    const printWrapperStyle = `font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:1.15;color:#000;background:#fff;width:100%;${getPrintTableStyleVariables()}`;
+
+    let html = `
+        <div style="${printWrapperStyle}">
+            ${printHeaderHtml}
+    `;
+
+    const printTestBlocks = [];
+
     validTests.forEach(
         (test,index) => {
 
             const form =
                 db.forms[test.formId];
 
-            html += `
+            const testBlockHtml = `
                 <div style="
                     margin-top:${index ? "0" : `${4 + patientTestsOrderBarToFirstTestGap}px`};
                     ${getPrintTestVerticalGapStyle(index === 0)}
@@ -7513,6 +7676,9 @@ function buildPrintAllReport(tests){
 
                 </div>
             `;
+
+            printTestBlocks.push(testBlockHtml);
+            html += testBlockHtml;
         }
     );
 
@@ -7520,6 +7686,26 @@ function buildPrintAllReport(tests){
         </div>
         ${buildPrintFooter()}
     `;
+
+    /* Header, patient data and tests bar on EVERY printed page. */
+    const printFooterHtml = buildPrintFooter();
+    const paginatedPages = paginatePrintReport(
+        printHeaderHtml,
+        printTestBlocks,
+        printFooterHtml,
+        printWrapperStyle,
+        db.settings && db.settings.printTablePreserveSpace === true
+    );
+
+    if(paginatedPages){
+        applyPrintNormalFlow();
+        return paginatedPages.map((pageHtml, pageIndex) => `
+        <div class="print-report-page" style="${printWrapperStyle}${pageIndex > 0 ? "page-break-before:always;break-before:page;" : ""}">
+            ${printHeaderHtml}
+            ${pageHtml}
+        </div>
+        `).join("") + printFooterHtml;
+    }
 
     return html;
 }
