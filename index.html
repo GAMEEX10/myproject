@@ -1007,7 +1007,10 @@ button{
     position:relative;padding:8px 5px;border:1px solid #e4e4e4;border-radius:4px;cursor:pointer;background:#fff;text-align:center;
 }
 .sample-item:hover{background:#f5f5f5;}
-.sample-item.active{background:#e9eef4;border:1px solid #1769aa;}
+.sample-item.active{background:#e9eef4;border:1px solid #e60000;}
+.sample-item.printed{background:#cfe2f8;border-color:#5b9bd5;}
+.sample-item.printed:hover{background:#bcd8f5;}
+.sample-item.printed.active{background:#cfe2f8;border:1px solid #e60000;}
 .sample-test-count{position:absolute;top:2px;right:2px;font-size:8px;line-height:12px;min-width:12px;height:12px;padding:0 3px;border-radius:7px;background:#eee;border:1px solid #ccc;color:#555;display:inline-flex;align-items:center;justify-content:center;font-weight:700;}
 .sample-no{font-size:12px;color:#666;margin:0;font-weight:700;}
 .sample-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -7929,7 +7932,7 @@ function renderPatients(){
     db.patients.forEach((patient,index) => {
         if(!Number(patient.number)) patient.number = index + 1;
         const item = document.createElement("div");
-        item.className = "sample-item" + (patient.id === selectedPatientId ? " active" : "");
+        item.className = "sample-item" + (patient.id === selectedPatientId ? " active" : "") + (patient.printed ? " printed" : "");
         item.dataset.patientId = patient.id;
         item.tabIndex = 0;
         const selectedTestCount = Array.isArray(patient.selectedTestForms)
@@ -9220,6 +9223,16 @@ function flashSaveResultsButton(){
 }
 
 /* Keep the existing print engine, but make the visible workspace the single source of patient/test selection. */
+/* Marks a patient as printed: the patient's box in the samples panel turns blue immediately and stays blue. */
+function markPatientPrinted(patientId){
+    const patient = db.patients.find(p => p.id === patientId);
+    if(!patient) return;
+    patient.printed = true;
+    saveDB();
+    const box = Array.from(document.querySelectorAll(".sample-item")).find(el => el.dataset.patientId === patientId);
+    if(box) box.classList.add("printed");
+}
+
 function printCurrentReport(){
     /* Automatically save the current patient before printing. */
     if(selectedPatientId){
@@ -9254,6 +9267,7 @@ function printCurrentReport(){
     if(!printArea) return;
     printArea.innerHTML=buildPrintAllReport(tests);
     movePrintFooterOutsidePrintArea();
+    markPatientPrinted(patient.id);
     window.print();
 }
 
