@@ -1395,6 +1395,7 @@ button{
                     <button type="button" class="settings-tab" data-settings-section="advanced" onclick="showSettingsSection('advanced')">خيارات متقدمة</button>
                     <button type="button" class="settings-tab" data-settings-section="test-order" onclick="showSettingsSection('test-order')">الترتيب القياسي للفحوصات</button>
                     <button type="button" class="settings-tab" data-settings-section="default-values" onclick="showSettingsSection('default-values')">تعديل القيم الافتراضية للجداول</button>
+                    <button type="button" class="settings-tab" data-settings-section="colors" onclick="showSettingsSection('colors')">الألوان</button>
                 </div>
 
                 <div id="settingsSection-settings" class="settings-subpage active">
@@ -2007,12 +2008,12 @@ button{
                                 <label>طريقة ظهور جداول الفحوصات عند اختيار فحص جديد</label>
 
                                 <label style="display:flex;align-items:flex-start;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
-                                    <input id="settingFormFillModeEmpty" name="settingFormFillMode" type="radio" value="empty">
+                                    <input id="settingFormFillModeEmpty" name="settingFormFillMode" type="radio" value="empty" style="width:auto;flex:none;padding:0;margin:0;">
                                     <span>الخيار العادي — تظهر الجداول فارغة كما هي</span>
                                 </label>
 
                                 <label style="display:flex;align-items:flex-start;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
-                                    <input id="settingFormFillModeDefaults" name="settingFormFillMode" type="radio" value="defaults" checked>
+                                    <input id="settingFormFillModeDefaults" name="settingFormFillMode" type="radio" value="defaults" checked style="width:auto;flex:none;padding:0;margin:0;">
                                     <span>التعبئة بالقيم الافتراضية — تظهر الجداول مملوءة بالقيم الطبيعية القياسية ويعدّل الطبيب ما يلزم فقط (الخيار المحدد افتراضيًا)</span>
                                 </label>
 
@@ -2080,6 +2081,187 @@ button{
                             <div class="actions" style="margin-top:10px;">
                                 <button class="btn btn-success" onclick="saveDefaultValuesSettings()">Save Settings</button>
                                 <button class="btn btn-light" onclick="resetAllDefaultValues()">الرجوع للقيم الافتراضية الأصلية لكل الفحوصات</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settingsSection-colors" class="settings-subpage">
+                    <div class="panel">
+                        <div class="panel-header">الألوان</div>
+                        <div class="panel-body">
+
+                            <div style="position:sticky;top:0;z-index:30;background:#fff;border:1px solid #d9d9d9;border-radius:6px;padding:10px 14px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,.08);">
+                                <div style="font-size:12px;color:#666;margin-bottom:8px;">معاينة حيّة للحالات الأربع (تتغير فور تعديل الخيارات، وتُطبَّق على النظام بعد Save Settings):</div>
+                                <div style="display:flex;gap:26px;flex-wrap:wrap;padding:8px 14px 12px;">
+                                    <div style="text-align:center;"><div id="settingPreviewUnprinted" class="sample-item" style="width:70px;height:70px;"><span class="sample-no">1</span></div><div style="font-size:11px;margin-top:6px;">قبل الطباعة</div></div>
+                                    <div style="text-align:center;"><div id="settingPreviewUnprintedSel" class="sample-item" style="width:70px;height:70px;"><span class="sample-no">2</span></div><div style="font-size:11px;margin-top:6px;">قبل الطباعة + محدد</div></div>
+                                    <div style="text-align:center;"><div id="settingPreviewPrinted" class="sample-item" style="width:70px;height:70px;"><span class="sample-no">3</span></div><div style="font-size:11px;margin-top:6px;">بعد الطباعة</div></div>
+                                    <div style="text-align:center;"><div id="settingPreviewPrintedSel" class="sample-item" style="width:70px;height:70px;"><span class="sample-no">4</span></div><div style="font-size:11px;margin-top:6px;">بعد الطباعة + محدد</div></div>
+                                </div>
+                            </div>
+
+                            <div class="field full">
+                                <label>ألوان المربعات في samples-panel حسب الحالة</label>
+                                <div style="font-size:12px;color:#666;margin-top:4px;">لكل حالة لون مستقل، لتتمكن من التمييز بين المطبوع وغير المطبوع حتى عند التحديد.</div>
+
+                                <div style="border:1px solid #e4e4e4;border-radius:6px;padding:10px 12px;margin-top:8px;">
+                                    <div style="margin-top:0;">
+                                    <div style="font-weight:700;font-size:13px;">1) قبل الطباعة — بدون تحديد</div>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingUnprintedColorModeDefault" name="settingUnprintedColorMode" type="radio" value="default" checked onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>اللون الافتراضي (اللون الحالي — أبيض)</span>
+                                        <span style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#fff;border:1px solid #e4e4e4;"></span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingUnprintedColorModeCustom" name="settingUnprintedColorMode" type="radio" value="custom" onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>تحديد اللون</span>
+                                        <input id="settingUnprintedColor" type="color" value="#ffffff" oninput="document.getElementById('settingUnprintedColorModeCustom').checked=true;updateColorsSettingsPreview()" style="width:48px;height:30px;padding:0;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">
+                                        <span id="settingUnprintedColorPreview" style="display:inline-block;width:34px;height:22px;border-radius:4px;border:1px solid #999;"></span>
+                                    </label>
+                                </div>
+
+                                    <div style="margin-top:14px;">
+                                    <div style="font-weight:700;font-size:13px;">2) قبل الطباعة — مع التحديد</div>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingUnprintedSelColorModeDefault" name="settingUnprintedSelColorMode" type="radio" value="default" checked onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>اللون الافتراضي (اللون الحالي)</span>
+                                        <span style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#e9eef4;border:1px solid #e60000;"></span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingUnprintedSelColorModeCustom" name="settingUnprintedSelColorMode" type="radio" value="custom" onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>تحديد اللون</span>
+                                        <input id="settingUnprintedSelColor" type="color" value="#fff176" oninput="document.getElementById('settingUnprintedSelColorModeCustom').checked=true;updateColorsSettingsPreview()" style="width:48px;height:30px;padding:0;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">
+                                        <span id="settingUnprintedSelColorPreview" style="display:inline-block;width:34px;height:22px;border-radius:4px;border:1px solid #999;"></span>
+                                    </label>
+                                </div>
+
+                                    <div style="margin-top:14px;">
+                                    <div style="font-weight:700;font-size:13px;">3) بعد الطباعة — بدون تحديد</div>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingPrintedColorModeDefault" name="settingPrintedColorMode" type="radio" value="default" checked onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>اللون الافتراضي (اللون الحالي — أزرق فاتح)</span>
+                                        <span style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#cfe2f8;border:1px solid #5b9bd5;"></span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingPrintedColorModeCustom" name="settingPrintedColorMode" type="radio" value="custom" onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>تحديد اللون</span>
+                                        <input id="settingPrintedColor" type="color" value="#cfe2f8" oninput="document.getElementById('settingPrintedColorModeCustom').checked=true;updateColorsSettingsPreview()" style="width:48px;height:30px;padding:0;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">
+                                        <span id="settingPrintedColorPreview" style="display:inline-block;width:34px;height:22px;border-radius:4px;border:1px solid #999;"></span>
+                                    </label>
+                                </div>
+
+                                    <div style="margin-top:14px;">
+                                    <div style="font-weight:700;font-size:13px;">4) بعد الطباعة — مع التحديد</div>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingPrintedSelColorModeDefault" name="settingPrintedSelColorMode" type="radio" value="default" checked onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>اللون الافتراضي (اللون الحالي)</span>
+                                        <span style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#cfe2f8;border:1px solid #e60000;"></span>
+                                    </label>
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingPrintedSelColorModeCustom" name="settingPrintedSelColorMode" type="radio" value="custom" onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>تحديد اللون</span>
+                                        <input id="settingPrintedSelColor" type="color" value="#7fb5ee" oninput="document.getElementById('settingPrintedSelColorModeCustom').checked=true;updateColorsSettingsPreview()" style="width:48px;height:30px;padding:0;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">
+                                        <span id="settingPrintedSelColorPreview" style="display:inline-block;width:34px;height:22px;border-radius:4px;border:1px solid #999;"></span>
+                                    </label>
+                                </div>
+                                </div>
+                            </div>
+
+                            <div class="field full" style="margin-top:16px;">
+                                <label>لون الإطار المحيط بالمربع المحدد (في samples-panel)</label>
+
+                                <div id="settingSelectedFrameGroup" style="border:1px solid #e4e4e4;border-radius:6px;padding:8px 10px;margin-top:8px;">
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+                                        <input id="settingSelectedColorModeDefault" name="settingSelectedColorMode" type="radio" value="default" checked onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>اللون الافتراضي (اللون الحالي — أحمر)</span>
+                                        <span style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#fff;border:2px solid #e60000;"></span>
+                                    </label>
+
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingSelectedColorModeCustom" name="settingSelectedColorMode" type="radio" value="custom" onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>تحديد اللون</span>
+                                        <input id="settingSelectedColor" type="color" value="#e60000" oninput="document.getElementById('settingSelectedColorModeCustom').checked=true;updateColorsSettingsPreview()" style="width:48px;height:30px;padding:0;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">
+                                        <span id="settingSelectedColorPreview" style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#fff;border:2px solid #999;"></span>
+                                    </label>
+
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingSelectedColorModeNone" name="settingSelectedColorMode" type="radio" value="none" onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>بدون إطار</span>
+                                        <span style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#e9eef4;border:1px solid transparent;box-shadow:0 0 0 1px #e4e4e4;"></span>
+                                    </label>
+
+                                    <div style="font-weight:600;font-size:13px;margin-top:12px;">سماكة الإطار</div>
+
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingFrameWidthModeDefault" name="settingFrameWidthMode" type="radio" value="default" checked onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>الحجم الحالي (1px — الافتراضي)</span>
+                                        <span style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#fff;border:1px solid #e60000;"></span>
+                                    </label>
+
+                                    <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;">
+                                        <input id="settingFrameWidthModeCustom" name="settingFrameWidthMode" type="radio" value="custom" onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                        <span>تحديد الحجم</span>
+                                        <input id="settingFrameWidth" type="number" min="1" max="12" step="1" value="3" oninput="document.getElementById('settingFrameWidthModeCustom').checked=true;updateColorsSettingsPreview()" style="width:70px;padding:4px 6px;">
+                                        <span>px (من 1 إلى 12)</span>
+                                        <span id="settingFrameWidthPreview" style="display:inline-block;width:34px;height:22px;border-radius:4px;background:#fff;border:3px solid #e60000;box-sizing:border-box;"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="field full" style="margin-top:16px;">
+                                <label>تأثير البروز على المربع المحدد (في samples-panel)</label>
+                                <div style="font-size:12px;color:#666;margin-top:4px;">يعمل مع ألوان الحالات والإطار أعلاه، ويمكن إلغاؤه في أي وقت باختيار «بدون تأثير».</div>
+
+                                <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px;">
+                                    <label style="display:flex;align-items:center;gap:6px;font-weight:400;">
+                                        <span>النوع:</span>
+                                        <select id="settingEmbossType" onchange="updateColorsSettingsPreview()" style="width:auto;min-width:190px;">
+                                            <option value="none">بدون تأثير (الافتراضي)</option>
+                                            <option value="shadow">ظل خارجي</option>
+                                            <option value="lift">رفع (طفو)</option>
+                                            <option value="glow">توهج</option>
+                                            <option value="raised">بروز ثلاثي الأبعاد</option>
+                                        </select>
+                                    </label>
+
+                                    <label style="display:flex;align-items:center;gap:6px;font-weight:400;">
+                                        <span>الشدة:</span>
+                                        <select id="settingEmbossLevel" onchange="updateColorsSettingsPreview()" style="width:auto;min-width:110px;">
+                                            <option value="1">خفيفة</option>
+                                            <option value="2" selected>متوسطة</option>
+                                            <option value="3">قوية</option>
+                                        </select>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="field full" style="margin-top:16px;">
+                                <label>الظل الداخلي الخفيف للمربع المحدد (في samples-panel)</label>
+                                <div style="font-size:12px;color:#666;margin-top:4px;">يظهر داخل المربع المحدد فقط، ويمكن إلغاؤه باختيار «بدون ظل داخلي».</div>
+
+                                <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:8px;">
+                                    <input id="settingInnerShadowModeNone" name="settingInnerShadowMode" type="radio" value="none" checked onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                    <span>بدون ظل داخلي (الافتراضي — الحالي)</span>
+                                </label>
+
+                                <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;margin-top:6px;flex-wrap:wrap;">
+                                    <input id="settingInnerShadowModeCustom" name="settingInnerShadowMode" type="radio" value="custom" onchange="updateColorsSettingsPreview()" style="width:auto;flex:none;padding:0;margin:0;">
+                                    <span>ظل داخلي</span>
+                                    <span>اللون:</span>
+                                    <input id="settingInnerShadowColor" type="color" value="#000000" oninput="document.getElementById('settingInnerShadowModeCustom').checked=true;updateColorsSettingsPreview()" style="width:48px;height:30px;padding:0;border:1px solid #ccc;border-radius:4px;background:#fff;cursor:pointer;">
+                                    <span>الشفافية (الظهور):</span>
+                                    <input id="settingInnerShadowOpacity" type="range" min="5" max="100" step="5" value="30" oninput="document.getElementById('settingInnerShadowModeCustom').checked=true;updateColorsSettingsPreview()" style="width:160px;padding:0;">
+                                    <span id="settingInnerShadowOpacityLabel" style="min-width:38px;">30%</span>
+                                </label>
+                            </div>
+
+                            <div style="font-size:12px;color:#666;margin-top:10px;">
+                                اختر لونًا فاتحًا لمربع الطباعة حتى يبقى رقم المريض واضحًا. يمكنك الرجوع للألوان الأصلية في أي وقت باختيار «اللون الافتراضي» ثم الحفظ.
+                            </div>
+
+                            <div class="actions" style="margin-top:10px;">
+                                <button class="btn btn-success" onclick="saveColorsSettings()">Save Settings</button>
                             </div>
                         </div>
                     </div>
@@ -3241,7 +3423,7 @@ function saveDB(){
 
 function showSettingsSection(section){
 
-    if(section !== "forms" && section !== "settings" && section !== "appearance" && section !== "report-title-design" && section !== "table-format" && section !== "advanced" && section !== "test-order" && section !== "default-values") {
+    if(section !== "forms" && section !== "settings" && section !== "appearance" && section !== "report-title-design" && section !== "table-format" && section !== "advanced" && section !== "test-order" && section !== "default-values" && section !== "colors") {
         section = "settings";
     }
 
@@ -3283,6 +3465,8 @@ function showSettingsSection(section){
     }else if(section === "default-values"){
         defaultValuesDraft = null;
         renderDefaultValuesEditor();
+    }else if(section === "colors"){
+        loadColorsSettingsUI();
     }else{
         loadSettingsUI();
     }
@@ -8927,6 +9111,301 @@ function resetAllDefaultValues(){
     showMessage("Default values restored.");
 }
 
+/* ==========================================================
+   Colors (Settings > الألوان)
+   ----------------------------------------------------------
+   Two colors of the samples panel can be changed:
+   - the box of a patient whose report was printed
+   - the frame of the selected box
+   "default" keeps the original colors (no style is added at all);
+   "custom" applies the chosen color. Stored in db.settings.sampleColors.
+   ========================================================== */
+const SAMPLE_COLOR_DEFAULTS = {
+    printed:"#cfe2f8", selected:"#e60000", fill:"#ffeb3b", frameWidth:1, customFrameWidth:3,
+    unprinted:"#ffffff", unprintedSel:"#fff176", printedSel:"#7fb5ee",
+    innerShadowColor:"#000000", innerShadowOpacity:30
+};
+
+/* The original look of the four states of a box (what the system showed before these options existed). */
+const SAMPLE_STATE_ORIGINAL = {
+    unprinted:    { selector:".sample-item:not(.printed):not(.active)", "background":"#ffffff", "border-color":"#e4e4e4", "border-width":"1px" },
+    unprintedSel: { selector:".sample-item.active:not(.printed)",       "background":"#e9eef4", "border-color":"#e60000", "border-width":"1px" },
+    printed:      { selector:".sample-item.printed:not(.active)",       "background":"#cfe2f8", "border-color":"#5b9bd5", "border-width":"1px" },
+    printedSel:   { selector:".sample-item.printed.active",             "background":"#cfe2f8", "border-color":"#e60000", "border-width":"1px" }
+};
+const SAMPLE_STATE_NEUTRAL = { "box-shadow":"none", "transform":"none", "z-index":"auto" };
+
+function isSampleColorHex(value){
+    return /^#[0-9a-f]{6}$/i.test(String(value || ""));
+}
+
+function shadeSampleColor(hex, amount){
+    const channel = index => Math.round(parseInt(hex.slice(1 + index * 2, 3 + index * 2), 16) * (1 - amount));
+    return "#" + [0, 1, 2].map(index => Math.max(0, Math.min(255, channel(index))).toString(16).padStart(2, "0")).join("");
+}
+
+function sampleColorToRgba(hex, alpha){
+    return "rgba(" + [0, 1, 2].map(index => parseInt(hex.slice(1 + index * 2, 3 + index * 2), 16)).join(",") + "," + alpha + ")";
+}
+
+/* Full look of the four states, from the chosen settings. This is the single source used by the samples panel
+   (only what differs from the original look is written to the page) and by the live preview. */
+function resolveSampleStates(colors){
+    colors = colors || {};
+    const pick = (mode, value, fallback) => (mode === "custom" && isSampleColorHex(value)) ? String(value).toLowerCase() : fallback;
+    const original = SAMPLE_STATE_ORIGINAL;
+    const fillStyle = colors.selectedStyle === "fill";
+
+    const unprintedBg = pick(colors.unprintedMode, colors.unprintedColor, original.unprinted["background"]);
+    const printedBg = pick(colors.printedMode, colors.printedColor, original.printed["background"]);
+    const fillBg = pick(colors.fillMode, colors.fillColor, SAMPLE_COLOR_DEFAULTS.fill);
+    const frameNone = colors.selectedMode === "none";
+    const frameColor = frameNone ? "transparent" : pick(colors.selectedMode, colors.selectedColor, original.unprintedSel["border-color"]);
+    const unprintedSelBg = pick(colors.unprintedSelMode, colors.unprintedSelColor, fillStyle ? fillBg : original.unprintedSel["background"]);
+    const printedSelBg = pick(colors.printedSelMode, colors.printedSelColor, fillStyle ? fillBg : printedBg);
+
+    const requestedWidth = Math.max(1, Math.min(12, parseInt(colors.frameWidth, 10) || SAMPLE_COLOR_DEFAULTS.customFrameWidth));
+    const frameWidth = (!fillStyle && !frameNone && colors.frameWidthMode === "custom" && requestedWidth > 1) ? requestedWidth + "px" : "1px";
+
+    const level = Math.max(1, Math.min(3, parseInt(colors.embossLevel, 10) || 2));
+    const innerOpacity = Math.max(0, Math.min(100, parseInt(colors.innerShadowOpacity, 10)));
+
+    /* shadow, transform and stacking of a selected box: inner shadow + optional emboss effect */
+    const selectedEffects = accent => {
+        const shadows = [];
+        const effects = { "box-shadow":"none", "transform":"none", "z-index":"auto" };
+
+        if(colors.innerShadowMode === "custom" && isSampleColorHex(colors.innerShadowColor) && innerOpacity > 0){
+            shadows.push("inset 0 0 10px 1px " + sampleColorToRgba(colors.innerShadowColor, (innerOpacity / 100).toFixed(2)));
+        }
+
+        if(colors.embossType === "shadow"){
+            shadows.push("0 " + (level * 2) + "px " + (level * 4 + 2) + "px rgba(0,0,0," + (0.2 + 0.08 * level).toFixed(2) + ")");
+            effects["z-index"] = "2";
+        }else if(colors.embossType === "lift"){
+            effects["transform"] = "translateY(-" + (level + 1) + "px)";
+            shadows.push("0 " + (level * 3 + 2) + "px " + (level * 6 + 4) + "px rgba(0,0,0,0.32)");
+            effects["z-index"] = "3";
+        }else if(colors.embossType === "glow"){
+            shadows.push("0 0 " + (level * 5 + 3) + "px " + level + "px " + sampleColorToRgba(accent, 0.85));
+            effects["z-index"] = "2";
+        }else if(colors.embossType === "raised"){
+            shadows.push("inset 0 " + level + "px 0 rgba(255,255,255,0.75)");
+            shadows.push("inset 0 -" + (level + 1) + "px 0 rgba(0,0,0,0.28)");
+            shadows.push("0 " + (level + 2) + "px " + (level * 3 + 3) + "px rgba(0,0,0,0.3)");
+            effects["z-index"] = "2";
+        }
+
+        if(shadows.length) effects["box-shadow"] = shadows.join(", ");
+        return effects;
+    };
+
+    const selectedState = background => {
+        const accent = (fillStyle || frameNone) ? background : frameColor;
+        return Object.assign({
+            "background": background,
+            "border-color": fillStyle ? shadeSampleColor(background, 0.35) : frameColor,
+            "border-width": frameWidth
+        }, selectedEffects(accent));
+    };
+
+    return {
+        unprinted: Object.assign({ "background":unprintedBg, "border-color":original.unprinted["border-color"], "border-width":"1px" }, SAMPLE_STATE_NEUTRAL),
+        printed: Object.assign({
+            "background": printedBg,
+            "border-color": colors.printedMode === "custom" ? shadeSampleColor(printedBg, 0.25) : original.printed["border-color"],
+            "border-width": "1px"
+        }, SAMPLE_STATE_NEUTRAL),
+        unprintedSel: selectedState(unprintedSelBg),
+        printedSel: selectedState(printedSelBg)
+    };
+}
+
+function buildSampleColorsCss(colors){
+    const states = resolveSampleStates(colors);
+    let css = "";
+
+    Object.keys(states).forEach(key => {
+        const state = states[key];
+        const original = SAMPLE_STATE_ORIGINAL[key];
+        const changed = {};
+
+        Object.keys(state).forEach(property => {
+            const originalValue = (property in original) ? original[property] : SAMPLE_STATE_NEUTRAL[property];
+            if(String(state[property]).toLowerCase() !== String(originalValue).toLowerCase()){
+                changed[property] = state[property];
+            }
+        });
+
+        const body = Object.keys(changed).map(property => property + ":" + changed[property] + ";").join("");
+        if(body){
+            css += original.selector + "{" + body + "}\n";
+        }
+        if((key === "unprinted" || key === "printed") && changed["background"]){
+            css += original.selector + ":hover{background:" + shadeSampleColor(state["background"], 0.06) + ";}\n";
+        }
+    });
+
+    return css;
+}
+
+function applySampleColors(){
+    const previous = document.getElementById("sampleColorsStyle");
+    if(previous) previous.remove();
+
+    const css = buildSampleColorsCss((db && db.settings && db.settings.sampleColors) || {});
+    if(css){
+        const style = document.createElement("style");
+        style.id = "sampleColorsStyle";
+        style.textContent = css;
+        document.head.appendChild(style);
+    }
+}
+
+/* The values currently chosen in the Colors tab. */
+function collectSampleColorsFromUI(){
+    const byId = id => document.getElementById(id);
+    const valid = (id, fallback) => isSampleColorHex(byId(id).value) ? byId(id).value : fallback;
+    const frameWidth = Math.max(1, Math.min(12, parseInt(byId("settingFrameWidth").value, 10) || SAMPLE_COLOR_DEFAULTS.customFrameWidth));
+    const opacity = Math.max(5, Math.min(100, parseInt(byId("settingInnerShadowOpacity").value, 10) || SAMPLE_COLOR_DEFAULTS.innerShadowOpacity));
+
+    return {
+        unprintedMode: byId("settingUnprintedColorModeCustom").checked ? "custom" : "default",
+        unprintedColor: valid("settingUnprintedColor", SAMPLE_COLOR_DEFAULTS.unprinted),
+        unprintedSelMode: byId("settingUnprintedSelColorModeCustom").checked ? "custom" : "default",
+        unprintedSelColor: valid("settingUnprintedSelColor", SAMPLE_COLOR_DEFAULTS.unprintedSel),
+        printedMode: byId("settingPrintedColorModeCustom").checked ? "custom" : "default",
+        printedColor: valid("settingPrintedColor", SAMPLE_COLOR_DEFAULTS.printed),
+        printedSelMode: byId("settingPrintedSelColorModeCustom").checked ? "custom" : "default",
+        printedSelColor: valid("settingPrintedSelColor", SAMPLE_COLOR_DEFAULTS.printedSel),
+        selectedStyle: "frame",
+        selectedMode: byId("settingSelectedColorModeNone").checked ? "none" : (byId("settingSelectedColorModeCustom").checked ? "custom" : "default"),
+        selectedColor: valid("settingSelectedColor", SAMPLE_COLOR_DEFAULTS.selected),
+        frameWidthMode: byId("settingFrameWidthModeCustom").checked ? "custom" : "default",
+        frameWidth: frameWidth,
+        embossType: byId("settingEmbossType").value,
+        embossLevel: parseInt(byId("settingEmbossLevel").value, 10) || 2,
+        innerShadowMode: byId("settingInnerShadowModeCustom").checked ? "custom" : "default",
+        innerShadowColor: valid("settingInnerShadowColor", SAMPLE_COLOR_DEFAULTS.innerShadowColor),
+        innerShadowOpacity: opacity
+    };
+}
+
+function updateColorsSettingsPreview(){
+    const byId = id => document.getElementById(id);
+    if(!byId("settingFrameWidth") || !byId("settingInnerShadowOpacity")) return;
+
+    /* a color picker is enabled only while its "custom" option is chosen */
+    [
+        ["settingUnprintedColor", "settingUnprintedColorModeCustom"],
+        ["settingUnprintedSelColor", "settingUnprintedSelColorModeCustom"],
+        ["settingPrintedColor", "settingPrintedColorModeCustom"],
+        ["settingPrintedSelColor", "settingPrintedSelColorModeCustom"],
+        ["settingSelectedColor", "settingSelectedColorModeCustom"],
+        ["settingFrameWidth", "settingFrameWidthModeCustom"],
+        ["settingInnerShadowColor", "settingInnerShadowModeCustom"],
+        ["settingInnerShadowOpacity", "settingInnerShadowModeCustom"]
+    ].forEach(pair => { byId(pair[0]).disabled = !byId(pair[1]).checked; });
+    const noFrame = byId("settingSelectedColorModeNone").checked;
+    byId("settingFrameWidth").disabled = noFrame || !byId("settingFrameWidthModeCustom").checked;
+    byId("settingFrameWidthModeDefault").disabled = noFrame;
+    byId("settingFrameWidthModeCustom").disabled = noFrame;
+    byId("settingEmbossLevel").disabled = byId("settingEmbossType").value === "none";
+    byId("settingInnerShadowOpacityLabel").textContent = byId("settingInnerShadowOpacity").value + "%";
+
+    /* small swatches next to each color */
+    [["settingUnprinted", 0.12], ["settingUnprintedSel", 0.25], ["settingPrinted", 0.25], ["settingPrintedSel", 0.25]].forEach(item => {
+        const swatch = byId(item[0] + "ColorPreview");
+        const input = byId(item[0] + "Color");
+        swatch.style.background = input.value;
+        swatch.style.borderColor = shadeSampleColor(input.value, item[1]);
+        swatch.style.opacity = input.disabled ? "0.35" : "1";
+    });
+
+    const selectedPreview = byId("settingSelectedColorPreview");
+    if(selectedPreview){
+        selectedPreview.style.borderColor = byId("settingSelectedColor").value;
+        selectedPreview.style.opacity = byId("settingSelectedColor").disabled ? "0.35" : "1";
+    }
+
+    const widthPreview = byId("settingFrameWidthPreview");
+    if(widthPreview){
+        const width = Math.max(1, Math.min(12, parseInt(byId("settingFrameWidth").value, 10) || SAMPLE_COLOR_DEFAULTS.customFrameWidth));
+        widthPreview.style.borderWidth = Math.min(width, 10) + "px";
+        widthPreview.style.borderColor = byId("settingSelectedColorModeCustom").checked ? byId("settingSelectedColor").value : SAMPLE_COLOR_DEFAULTS.selected;
+        widthPreview.style.opacity = byId("settingFrameWidth").disabled ? "0.35" : "1";
+    }
+
+    /* Live preview of the four states. */
+    const states = resolveSampleStates(collectSampleColorsFromUI());
+    [["settingPreviewUnprinted", "unprinted"], ["settingPreviewUnprintedSel", "unprintedSel"],
+     ["settingPreviewPrinted", "printed"], ["settingPreviewPrintedSel", "printedSel"]].forEach(item => {
+        const box = byId(item[0]);
+        const state = states[item[1]];
+        if(!box || !state) return;
+        box.style.background = state["background"];
+        box.style.borderStyle = "solid";
+        box.style.borderColor = state["border-color"];
+        box.style.borderWidth = state["border-width"];
+        box.style.boxShadow = state["box-shadow"];
+        box.style.transform = state["transform"];
+        box.style.zIndex = state["z-index"];
+    });
+}
+
+function loadColorsSettingsUI(){
+    const colors = (db.settings && db.settings.sampleColors) || {};
+    const byId = id => document.getElementById(id);
+    const hexOr = (value, fallback) => isSampleColorHex(value) ? value : fallback;
+    const widthValue = parseInt(colors.frameWidth, 10);
+    const opacityValue = parseInt(colors.innerShadowOpacity, 10);
+
+    /* Settings saved by an earlier version with "fill the selected box" become the colors of the
+       two selected states (2 and 4), so the same colors stay visible and editable here. */
+    const legacyFill = colors.selectedStyle === "fill";
+    const legacyFillColor = (colors.fillMode === "custom" && isSampleColorHex(colors.fillColor))
+        ? colors.fillColor
+        : SAMPLE_COLOR_DEFAULTS.fill;
+
+    [["Unprinted", "unprinted", SAMPLE_COLOR_DEFAULTS.unprinted, false],
+     ["UnprintedSel", "unprintedSel", SAMPLE_COLOR_DEFAULTS.unprintedSel, true],
+     ["Printed", "printed", SAMPLE_COLOR_DEFAULTS.printed, false],
+     ["PrintedSel", "printedSel", SAMPLE_COLOR_DEFAULTS.printedSel, true]].forEach(item => {
+        const ownCustom = colors[item[1] + "Mode"] === "custom";
+        const custom = ownCustom || (item[3] && legacyFill);
+        const color = ownCustom ? hexOr(colors[item[1] + "Color"], item[2]) : (item[3] && legacyFill ? legacyFillColor : hexOr(colors[item[1] + "Color"], item[2]));
+        byId("setting" + item[0] + "ColorModeDefault").checked = !custom;
+        byId("setting" + item[0] + "ColorModeCustom").checked = custom;
+        byId("setting" + item[0] + "Color").value = color;
+    });
+
+    byId("settingSelectedColorModeDefault").checked = colors.selectedMode !== "custom" && colors.selectedMode !== "none";
+    byId("settingSelectedColorModeCustom").checked = colors.selectedMode === "custom";
+    byId("settingSelectedColorModeNone").checked = colors.selectedMode === "none";
+    byId("settingSelectedColor").value = hexOr(colors.selectedColor, SAMPLE_COLOR_DEFAULTS.selected);
+
+    byId("settingFrameWidthModeDefault").checked = colors.frameWidthMode !== "custom";
+    byId("settingFrameWidthModeCustom").checked = colors.frameWidthMode === "custom";
+    byId("settingFrameWidth").value = (widthValue >= 1 && widthValue <= 12) ? widthValue : SAMPLE_COLOR_DEFAULTS.customFrameWidth;
+
+    byId("settingEmbossType").value = ["shadow","lift","glow","raised"].includes(colors.embossType) ? colors.embossType : "none";
+    byId("settingEmbossLevel").value = String([1,2,3].includes(parseInt(colors.embossLevel, 10)) ? parseInt(colors.embossLevel, 10) : 2);
+
+    byId("settingInnerShadowModeNone").checked = colors.innerShadowMode !== "custom";
+    byId("settingInnerShadowModeCustom").checked = colors.innerShadowMode === "custom";
+    byId("settingInnerShadowColor").value = hexOr(colors.innerShadowColor, SAMPLE_COLOR_DEFAULTS.innerShadowColor);
+    byId("settingInnerShadowOpacity").value = (opacityValue >= 5 && opacityValue <= 100) ? opacityValue : SAMPLE_COLOR_DEFAULTS.innerShadowOpacity;
+
+    updateColorsSettingsPreview();
+}
+
+function saveColorsSettings(){
+    db.settings.sampleColors = collectSampleColorsFromUI();
+    applySampleColors();
+    saveDB();
+    showMessage("Settings saved.");
+}
+
 function renderInlineFormCard(form,test,mode){
     normalizeForm(form);
     const card=document.createElement("article");
@@ -9305,6 +9784,7 @@ function initialize(){
         renderForms();
         
         loadSettingsUI();
+        applySampleColors();
         applyChooseTestsLayout((db.settings && db.settings.chooseTestsLayout) || "top");
 
         const restoredState = loadUIState();
